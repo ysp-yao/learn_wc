@@ -84,10 +84,17 @@ typedef std::vector<ContentInfo> ContentInfos;
 typedef std::vector<ContentGroup> ContentGroups;
 typedef std::vector<TransportInfo> TransportInfos;
 
+
+// Describes a collection of contents, each with its own name and
+// type.  Analogous to a <jingle> or <session> stanza.  Assumes that
+// contents are unique be name, but doesn't enforce that.
 class SessionDescription {
  private:
   ContentInfos contents_;
   TransportInfos transport_infos_;
   ContentGroups content_groups_;
   bool msid_supported_ = true;
+    // Default to what Plan B would do.
+  // TODO(bugs.webrtc.org/8530): Change default to kMsidSignalingMediaSection.
+  int msid_signaling_ = kMsidSignalingSsrcAttribute;
 };

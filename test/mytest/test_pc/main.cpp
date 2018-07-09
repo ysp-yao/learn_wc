@@ -54,16 +54,23 @@ class CallBack : public webrtc::PeerConnectionObserver,
   void OnIceConnectionReceivingChange(bool receiving) override {}
 
   // CreateSessionDescriptionObserver implementation.
-  void OnSuccess(webrtc::SessionDescriptionInterface* desc) override{};
+  void OnSuccess(webrtc::SessionDescriptionInterface* desc) override{
+    std::string sdp;
+    desc->ToString(&sdp);
+
+    //peer_connection_->SetLocalDescription(DummySetSessionDescriptionObserver::Create(), desc);
+  };
   void OnFailure(webrtc::RTCError error) override{};
 };
 
 int main() {
-  // rtc::Thread *worker_thread_ptr_, *signal_thread_ptr_;
-  // worker_thread_ptr_ = new rtc::Thread;
-  // signal_thread_ptr_ = new rtc::Thread;
-  // worker_thread_ptr_->Start();
-  // signal_thread_ptr_->Start();
+  rtc::Thread *worker_thread_ptr_, *signal_thread_ptr_;
+  worker_thread_ptr_ = new rtc::Thread;
+  signal_thread_ptr_ = new rtc::Thread;
+  worker_thread_ptr_->Start();
+  signal_thread_ptr_->Start();
+  
+  
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       peer_connection_factory;
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection;
@@ -71,8 +78,8 @@ int main() {
   rtc::scoped_refptr<CallBack> callback = new rtc::RefCountedObject<CallBack>();
 
   peer_connection_factory = webrtc::CreatePeerConnectionFactory(
-      nullptr /* network_thread */, nullptr /* worker_thread */,
-      nullptr /* signaling_thread */, nullptr /* default_adm */,
+      nullptr /* network_thread */, worker_thread_ptr_ /* worker_thread */,
+    signal_thread_ptr_ /* signaling_thread */, nullptr /* default_adm */,
       webrtc::CreateBuiltinAudioEncoderFactory(),
       webrtc::CreateBuiltinAudioDecoderFactory(),
       webrtc::CreateBuiltinVideoEncoderFactory(),
