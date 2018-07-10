@@ -47,9 +47,9 @@ Webrtc::~Webrtc() {
 
 void Webrtc::CreateOffer() {
   webrtc::PeerConnectionInterface::RTCConfiguration config;
-  //webrtc::PeerConnectionInterface::IceServer server_google;
-  //server_google.uri = "stun:stun.l.google.com:19302";
-  //config.servers.push_back(server_google);
+  webrtc::PeerConnectionInterface::IceServer server_google;
+  server_google.uri = "stun:stun.l.google.com:19302";
+  config.servers.push_back(server_google);
 
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
       config, nullptr, nullptr, this);
