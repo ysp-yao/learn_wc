@@ -1,21 +1,33 @@
 /////////////////////////////////////////////////////////////////////////////////////////
-// Describes a session content. Individual content types inherit from
-// this class.  Analagous to a <jingle><content><description> or
-// <session><description>.
-class ContentDescription {
- public:
-  virtual ~ContentDescription() {}
-  virtual ContentDescription* Copy() const = 0;
+// Describes a session description media section. There are subclasses for each
+// media type (audio, video, data) that will have additional information.
+class MediaContentDescription {
+ protected:
+  bool rtcp_mux_ = false;
+  bool rtcp_reduced_size_ = false;
+  int bandwidth_ = kAutoBandwidth;
+  std::string protocol_;
+  std::vector<CryptoParams> cryptos_;
+  std::vector<webrtc::RtpExtension> rtp_header_extensions_;
+  bool rtp_header_extensions_set_ = false;
+  StreamParamsVec streams_;
+  bool conference_mode_ = false;
+  webrtc::RtpTransceiverDirection direction_ =
+      webrtc::RtpTransceiverDirection::kSendRecv;
+  rtc::SocketAddress connection_address_;
 };
-// Analagous to a <jingle><content> or <session><description>.
-// name = name of <content name="...">
-// type = xmlns of <content>
+
+// Represents a session description section. Most information about the section
+// is stored in the description, which is a subclass of MediaContentDescription.
 struct ContentInfo {
+  // TODO(bugs.webrtc.org/8620): Rename this to mid.
   std::string name;
-  std::string type;
+  MediaProtocolType type;
   bool rejected = false;
   bool bundle_only = false;
-  ContentDescription* description = nullptr;
+  // TODO(bugs.webrtc.org/8620): Switch to the getter and setter, and make this
+  // private.
+  MediaContentDescription* description = nullptr;
 };
 ////////////////////////////////////////////////////////////////////////////////////////
 typedef std::vector<std::string> ContentNames;

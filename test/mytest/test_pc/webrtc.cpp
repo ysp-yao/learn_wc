@@ -16,30 +16,49 @@ class DummySetSessionDescriptionObserver
 };
 
 
+//Webrtc::Webrtc() {
+//  worker_thread_ptr_ = new rtc::Thread;
+//  signal_thread_ptr_ = new rtc::Thread;
+//  worker_thread_ptr_->Start();
+//  signal_thread_ptr_->Start();
+//
+//  peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
+//    nullptr /* network_thread */, worker_thread_ptr_ /* worker_thread */,
+//    signal_thread_ptr_ /* signaling_thread */, nullptr /* default_adm */,
+//    webrtc::CreateBuiltinAudioEncoderFactory(),
+//    webrtc::CreateBuiltinAudioDecoderFactory(),
+//    webrtc::CreateBuiltinVideoEncoderFactory(),
+//    webrtc::CreateBuiltinVideoDecoderFactory(), nullptr /* audio_mixer */,
+//    nullptr /* audio_processing */);
+//
+//  stream_ = peer_connection_factory_->CreateLocalMediaStream("stream_label");
+//
+//  rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(
+//    peer_connection_factory_->CreateAudioTrack(
+//        "audio_label",
+//        peer_connection_factory_->CreateAudioSource(cricket::AudioOptions())));
+//  stream_->AddTrack(audio_track);
+//
+//}
+
 Webrtc::Webrtc() {
   worker_thread_ptr_ = new rtc::Thread;
   signal_thread_ptr_ = new rtc::Thread;
   worker_thread_ptr_->Start();
   signal_thread_ptr_->Start();
 
-  peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
-    nullptr /* network_thread */, worker_thread_ptr_ /* worker_thread */,
-    signal_thread_ptr_ /* signaling_thread */, nullptr /* default_adm */,
-    webrtc::CreateBuiltinAudioEncoderFactory(),
-    webrtc::CreateBuiltinAudioDecoderFactory(),
-    webrtc::CreateBuiltinVideoEncoderFactory(),
-    webrtc::CreateBuiltinVideoDecoderFactory(), nullptr /* audio_mixer */,
-    nullptr /* audio_processing */);
-
-  stream_ = peer_connection_factory_->CreateLocalMediaStream("stream_label");
-
-  rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-    peer_connection_factory_->CreateAudioTrack(
-        "audio_label",
-        peer_connection_factory_->CreateAudioSource(cricket::AudioOptions())));
-  stream_->AddTrack(audio_track);
+    peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
+      nullptr /* network_thread */, worker_thread_ptr_ /* worker_thread */,
+      signal_thread_ptr_ /* signaling_thread */, nullptr /* default_adm */,
+      webrtc::CreateBuiltinAudioEncoderFactory(),
+      webrtc::CreateBuiltinAudioDecoderFactory(),
+      webrtc::CreateBuiltinVideoEncoderFactory(),
+      webrtc::CreateBuiltinVideoDecoderFactory(), nullptr /* audio_mixer */,
+      nullptr /* audio_processing */);
 
 }
+
+
 
 Webrtc::~Webrtc() {
 
@@ -94,4 +113,32 @@ void Webrtc::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
 
 void Webrtc::OnFailure(webrtc::RTCError error) {
 
+}
+
+void Webrtc::CreateDataOffer() {
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  //webrtc::PeerConnectionInterface::IceServer server_google;
+  //server_google.uri = "stun:stun.l.google.com:19302";
+  //config.servers.push_back(server_google);
+
+  peer_connection_ = peer_connection_factory_->CreatePeerConnection(
+    config, nullptr, nullptr, this);
+
+  webrtc::DataChannelInit dc_config;
+  data_channel_ = peer_connection_->CreateDataChannel("DataChannel", &dc_config);
+  data_channel_->RegisterObserver(this);
+
+  webrtc::FakeConstraints constraints;
+  peer_connection_->CreateOffer(this, &constraints);
+}
+
+
+void Webrtc::OnStateChange() {
+  int a = 10;
+  a++;
+}
+
+void Webrtc::OnMessage(const webrtc::DataBuffer& buffer) {
+  int a = 10;
+  a++;
 }

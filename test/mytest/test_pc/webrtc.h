@@ -28,12 +28,15 @@
 
 
 class Webrtc : public webrtc::PeerConnectionObserver,
-               public webrtc::CreateSessionDescriptionObserver {
+               public webrtc::CreateSessionDescriptionObserver,
+               public webrtc::DataChannelObserver {
  public:
   Webrtc();
   ~Webrtc();
 
   void CreateOffer();
+
+  void CreateDataOffer();
 
   //
   // PeerConnectionObserver implementation.
@@ -72,6 +75,15 @@ class Webrtc : public webrtc::PeerConnectionObserver,
 
   void OnFailure(webrtc::RTCError error) override;
 
+  //
+  // DataChannelObserver implementation
+  //
+
+  void OnStateChange() override;
+
+  void OnMessage(const webrtc::DataBuffer& buffer) override;
+
+
 private:
   rtc::Thread *worker_thread_ptr_, *signal_thread_ptr_;
 
@@ -80,6 +92,8 @@ private:
   rtc::scoped_refptr<webrtc::MediaStreamInterface> stream_;
 
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
+
+  rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel_;
 };
 
 
