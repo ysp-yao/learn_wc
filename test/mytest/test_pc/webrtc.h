@@ -85,7 +85,7 @@ class Webrtc : public webrtc::PeerConnectionObserver,
 
 
 private:
-  rtc::Thread *worker_thread_ptr_, *signal_thread_ptr_;
+  rtc::Thread *worker_thread_ptr_, *signal_thread_ptr_, *network_thread_ptr_;
 
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory_;
   

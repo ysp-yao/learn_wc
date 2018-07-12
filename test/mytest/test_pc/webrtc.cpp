@@ -43,17 +43,26 @@ class DummySetSessionDescriptionObserver
 
 Webrtc::Webrtc() {
   worker_thread_ptr_ = new rtc::Thread;
+  worker_thread_ptr_->SetName("pc_worker_thread", nullptr);
   signal_thread_ptr_ = new rtc::Thread;
+  signal_thread_ptr_->SetName("pc_signal_thread", nullptr);
+  network_thread_ptr_ = new rtc::Thread;
+  network_thread_ptr_->SetName("pc_network_thread", nullptr);
+
   worker_thread_ptr_->Start();
   signal_thread_ptr_->Start();
+  network_thread_ptr_->Start();
 
     peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
-      nullptr /* network_thread */, worker_thread_ptr_ /* worker_thread */,
-      signal_thread_ptr_ /* signaling_thread */, nullptr /* default_adm */,
+      network_thread_ptr_ /* network_thread */,
+      worker_thread_ptr_ /* worker_thread */,
+      signal_thread_ptr_ /* signaling_thread */, 
+      nullptr /* default_adm */,
       webrtc::CreateBuiltinAudioEncoderFactory(),
       webrtc::CreateBuiltinAudioDecoderFactory(),
       webrtc::CreateBuiltinVideoEncoderFactory(),
-      webrtc::CreateBuiltinVideoDecoderFactory(), nullptr /* audio_mixer */,
+      webrtc::CreateBuiltinVideoDecoderFactory(), 
+      nullptr /* audio_mixer */,
       nullptr /* audio_processing */);
 
 }
