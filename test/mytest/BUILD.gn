@@ -95,6 +95,3 @@ rtc_executable("macro") {
     "//third_party/libyuv",
   ]
 }
-
-
-

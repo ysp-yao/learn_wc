@@ -434,28 +434,28 @@ if (rtc_include_tests) {
     testonly = true
 
     deps = [
-      ":webrtc_common",
-      "api:rtc_api_unittests",
-      "api/audio/test:audio_api_unittests",
-      "api/audio_codecs/test:audio_codecs_api_unittests",
+      #":webrtc_common",
+      #"api:rtc_api_unittests",
+      #"api/audio/test:audio_api_unittests",
+      #"api/audio_codecs/test:audio_codecs_api_unittests",
       "api/video_codecs/test:video_codecs_api_unittests",
-      "p2p:libstunprober_unittests",
+      #"p2p:libstunprober_unittests",
       "p2p:rtc_p2p_unittests",
       "rtc_base:rtc_base_approved_unittests",
-      "rtc_base:rtc_base_tests_main",
-      "rtc_base:rtc_base_tests_utils",
-      "rtc_base:rtc_base_unittests",
-      "rtc_base:rtc_numerics_unittests",
-      "rtc_base:rtc_task_queue_unittests",
-      "rtc_base:sequenced_task_checker_unittests",
-      "rtc_base:weak_ptr_unittests",
-      "rtc_base/experiments:experiments_unittests",
-      "system_wrappers:metrics_default",
-      "system_wrappers:runtime_enabled_features_default",
+      #"rtc_base:rtc_base_tests_main",
+      #"rtc_base:rtc_base_tests_utils",
+      #"rtc_base:rtc_base_unittests",
+      #"rtc_base:rtc_numerics_unittests",
+      #"rtc_base:rtc_task_queue_unittests",
+      #"rtc_base:sequenced_task_checker_unittests",
+      #"rtc_base:weak_ptr_unittests",
+      #"rtc_base/experiments:experiments_unittests",
+      #"system_wrappers:metrics_default",
+      #"system_wrappers:runtime_enabled_features_default",
     ]
 
     if (rtc_enable_protobuf) {
-      deps += [ "logging:rtc_event_log_tests" ]
+      #deps += [ "logging:rtc_event_log_tests" ]
     }
 
     if (is_android) {
