@@ -5,51 +5,53 @@
 
 
 
-//#include "openssl/ssl.h"
-//#include "openssl/err.h"
-//
-//#include <winsock2.h>
-//
-//SSL_CTX* InitServerCTX(void)
-//{
-//  const SSL_METHOD *method;
-//  SSL_CTX *ctx;
-//
-//  OpenSSL_add_all_algorithms();  // load & register all cryptos, etc.
-//  SSL_load_error_strings();  // load all error messages
-//  method = TLSv1_2_server_method();  // create new server-method instance
-//  ctx = SSL_CTX_new(method); // create new context from method
-//  if (ctx == NULL)
-//  {
-//    ERR_print_errors_fp(stderr);
-//    abort();
-//  }
-//  return ctx;
-//}
-//
-//void LoadCertificates(SSL_CTX* ctx, const char* CertFile, const char* KeyFile)
-//{
-//  // set the local certificate from CertFile
-//  if (SSL_CTX_use_certificate_file(ctx, CertFile, SSL_FILETYPE_PEM) <= 0)
-//  {
-//    ERR_print_errors_fp(stderr);
-//    abort();
-//  }
-//  
-//  // set the private key from KeyFile (may be the same as CertFile)
-//  if (SSL_CTX_use_PrivateKey_file(ctx, KeyFile, SSL_FILETYPE_PEM) <= 0)
-//  {
-//    ERR_print_errors_fp(stderr);
-//    abort();
-//  }
-//
-//  // verify private key
-//  if (!SSL_CTX_check_private_key(ctx))
-//  {
-//    fprintf(stderr, "Private key does not match the public certificate\n");
-//    abort();
-//  }
-//}
+#include "openssl/ssl.h"
+#include "openssl/err.h"
+
+#include <stdio.h>
+
+#include <winsock2.h>
+
+SSL_CTX* InitServerCTX(void)
+{
+  const SSL_METHOD *method;
+  SSL_CTX *ctx;
+
+  OpenSSL_add_all_algorithms();  // load & register all cryptos, etc.
+  SSL_load_error_strings();  // load all error messages
+  method = TLSv1_2_server_method();  // create new server-method instance
+  ctx = SSL_CTX_new(method); // create new context from method
+  if (ctx == NULL)
+  {
+    ERR_print_errors_fp(stderr);
+    abort();
+  }
+  return ctx;
+}
+
+void LoadCertificates(SSL_CTX* ctx, const char* CertFile, const char* KeyFile)
+{
+  // set the local certificate from CertFile
+  if (SSL_CTX_use_certificate_file(ctx, CertFile, SSL_FILETYPE_PEM) <= 0)
+  {
+    ERR_print_errors_fp(stderr);
+    abort();
+  }
+  
+  // set the private key from KeyFile (may be the same as CertFile)
+  if (SSL_CTX_use_PrivateKey_file(ctx, KeyFile, SSL_FILETYPE_PEM) <= 0)
+  {
+    ERR_print_errors_fp(stderr);
+    abort();
+  }
+
+  // verify private key
+  if (!SSL_CTX_check_private_key(ctx))
+  {
+    fprintf(stderr, "Private key does not match the public certificate\n");
+    abort();
+  }
+}
 //
 //int OpenListener(int port)
 //{
@@ -156,23 +158,12 @@
 //}
 
 
-#include <winsock2.h>
-#include <stdio.h>
-
-
-int main()
+SOCKET OpenListener(int port)
 {
   SOCKET serversoc;
-  SOCKET clientsoc;
   SOCKADDR_IN serveraddr;
-  SOCKADDR_IN clientaddr;
-  char buf[1024];
-  int len;
 
-  WSADATA wsa;
-  WSAStartup(MAKEWORD(2, 0), &wsa);	//初始化WS2_32.DLL
-
-                                    //创建套接字
+  //创建套接字
   if ((serversoc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) <= 0)
   {
     printf("套接字socket创建失败!\n");
@@ -199,6 +190,31 @@ int main()
     return -1;
   }
 
+  return serversoc;
+}
+
+
+int main()
+{
+  SOCKET serversoc;
+  SOCKET clientsoc;
+
+  SOCKADDR_IN clientaddr;
+  char buf[1024];
+  char sendbuf[] = "hello client";
+  int len;
+
+  WSADATA wsa;
+  WSAStartup(MAKEWORD(2, 0), &wsa);	//初始化WS2_32.DLL
+
+
+  SSL_CTX* ctx;
+  SSL_library_init();
+    
+  ctx = InitServerCTX();  // initialize SSL
+  LoadCertificates(ctx, "../certs/mycert.pem", "../certs/mycert.pem");  // load certs
+  serversoc = OpenListener(-1);
+
   len = sizeof(SOCKADDR_IN);
 
   //接收请求
@@ -215,7 +231,7 @@ int main()
     closesocket(clientsoc);
   }
   printf("接收来自客户端的信息: %s\n", buf);
-  if (send(clientsoc, buf, strlen(buf) + 1, 0) <= 0)
+  if (send(clientsoc, sendbuf, strlen(sendbuf) + 1, 0) <= 0)
   {
     printf("发送错误!\n");
   }
