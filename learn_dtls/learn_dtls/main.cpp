@@ -29,6 +29,12 @@
 * SUCH DAMAGE.
 */
 
+// 
+// server : *.exe -p 21888 -L 127.0.0.1 -V
+// client : *.exe -p 21888  -V 127.0.0.1
+//
+
+
 #define WIN32
 
 #ifdef WIN32
@@ -370,6 +376,8 @@ DWORD WINAPI connection_handle(LPVOID *info) {
 #else
 void* connection_handle(void *info) {
 #endif
+
+
   ssize_t len;
   char buf[BUFFER_SIZE];
   char addrbuf[INET6_ADDRSTRLEN];
@@ -425,6 +433,7 @@ void* connection_handle(void *info) {
     printf("%s\n", ERR_error_string(ERR_get_error(), buf));
     goto cleanup;
   }
+  printf("new thread\n");
 
   /* Set and activate timeouts */
   timeout.tv_sec = 5;
@@ -609,15 +618,19 @@ void start_server(int port, char *local_address) {
   SSL_CTX_set_cipher_list(ctx, "ALL:NULL:eNULL:aNULL");
   SSL_CTX_set_session_cache_mode(ctx, SSL_SESS_CACHE_OFF);
 
-  if (!SSL_CTX_use_certificate_file(ctx, "certs/server-cert.pem", SSL_FILETYPE_PEM))
-    printf("\nERROR: no certificate found!");
+  SSL_CTX_set_security_level(ctx, 0); // https://bbs.csdn.net/topics/392018149£¬ SSL_CTX_use_certificate_file()±¨´í
 
-  if (!SSL_CTX_use_PrivateKey_file(ctx, "certs/server-key.pem", SSL_FILETYPE_PEM))
-    printf("\nERROR: no private key found!");
+  if (!SSL_CTX_use_certificate_file(ctx, "../certs/server-cert.pem", SSL_FILETYPE_PEM)) {
+    printf("ERROR, SSL_CTX_use_certificate_file:%s", ERR_error_string(ERR_get_error(), NULL));
+  }
 
-  if (!SSL_CTX_check_private_key(ctx))
-    printf("\nERROR: invalid private key!");
+  if (!SSL_CTX_use_PrivateKey_file(ctx, "../certs/server-key.pem", SSL_FILETYPE_PEM)) {
+    printf("ERROR, SSL_CTX_use_PrivateKey_file:%s", ERR_error_string(ERR_get_error(), NULL));
+  }
 
+  if (!SSL_CTX_check_private_key(ctx)) {
+    printf("ERROR, SSL_CTX_check_private_key:%s", ERR_error_string(ERR_get_error(), NULL));
+  }
   /* Client has to authenticate */
   SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, dtls_verify_callback);
 
@@ -685,6 +698,7 @@ void start_server(int port, char *local_address) {
     }
 #endif
   }
+  //while (1);
 
   THREAD_cleanup();
 #ifdef WIN32
@@ -774,14 +788,19 @@ void start_client(char *remote_address, char *local_address, int port, int lengt
   ctx = SSL_CTX_new(DTLS_client_method());
   SSL_CTX_set_cipher_list(ctx, "eNULL:!MD5");
 
-  if (!SSL_CTX_use_certificate_file(ctx, "certs/client-cert.pem", SSL_FILETYPE_PEM))
-    printf("\nERROR: no certificate found!");
+  SSL_CTX_set_security_level(ctx, 0); // https://bbs.csdn.net/topics/392018149£¬ SSL_CTX_use_certificate_file()±¨´í
 
-  if (!SSL_CTX_use_PrivateKey_file(ctx, "certs/client-key.pem", SSL_FILETYPE_PEM))
-    printf("\nERROR: no private key found!");
+  if (!SSL_CTX_use_certificate_file(ctx, "../certs/client-cert.pem", SSL_FILETYPE_PEM)) {
+    printf("ERROR, SSL_CTX_use_certificate_file:%s", ERR_error_string(ERR_get_error(), NULL));
+  }
 
-  if (!SSL_CTX_check_private_key(ctx))
-    printf("\nERROR: invalid private key!");
+  if (!SSL_CTX_use_PrivateKey_file(ctx, "../certs/client-key.pem", SSL_FILETYPE_PEM)) {
+    printf("ERROR, SSL_CTX_use_PrivateKey_file:%s", ERR_error_string(ERR_get_error(), NULL));
+  }
+
+  if (!SSL_CTX_check_private_key(ctx)) {
+    printf("ERROR, SSL_CTX_check_private_key:%s", ERR_error_string(ERR_get_error(), NULL));
+  }
 
   SSL_CTX_set_verify_depth(ctx, 2);
   SSL_CTX_set_read_ahead(ctx, 1);
