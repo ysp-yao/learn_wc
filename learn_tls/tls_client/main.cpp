@@ -1,114 +1,95 @@
 
+// SSL/TLS 握手过程详解
+// https://www.jianshu.com/p/7158568e4867
+
+// chapter 10, The Definitive Guide To Linux Network Programming
+
 #include "openssl/ssl.h"
 #include "openssl/err.h"
 #include <winsock2.h>
 #include <stdio.h>
 
+class WinSocket {
+public:
+  WinSocket() {
+    WSAStartup(MAKEWORD(2, 0), &wsa_);	//初始化WS2_32.DLL
+  }
+  ~WinSocket() {
+    WSACleanup();     //释放WS2_32.DLL
+  }
+private:
+  WSADATA wsa_;
+};
 
-SSL_CTX* InitCTX(void)
-{
-  const SSL_METHOD *method;
-  SSL_CTX *ctx;
 
-  OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
-  SSL_load_error_strings();   /* Bring in and register error messages */
-  method = TLSv1_2_client_method();  /* Create new client-method instance */
-  ctx = SSL_CTX_new(method);   /* Create new context */
-  if (ctx == NULL)
-  {
+int main() {
+
+  WinSocket win_socket;
+
+  // my_ssl_method->my_ssl_ctx->my_ssl->my_fd
+
+  const SSL_METHOD *my_ssl_method;
+  SSL_CTX *my_ssl_ctx;
+  SSL *my_ssl;
+  SOCKET my_fd;
+  struct sockaddr_in server;
+  int error = 0, read_in = 0;
+  char buffer[512];
+
+  OpenSSL_add_all_algorithms();
+  SSL_load_error_strings();
+
+  my_ssl_method = TLSv1_2_client_method();
+
+  if ((my_ssl_ctx = SSL_CTX_new(my_ssl_method)) == NULL) {
     ERR_print_errors_fp(stderr);
-    abort();
+    exit(-1);
   }
-  return ctx;
-}
 
-void ShowCerts(SSL* ssl)
-{
-  X509 *cert;
-  char *line;
-
-  cert = SSL_get_peer_certificate(ssl); /* get the server's certificate */
-  if (cert != NULL)
-  {
-    printf("Server certificates:\n");
-    line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
-    printf("Subject: %s\n", line);
-    //free(line);       /* free the malloc'ed string */
-    line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
-    printf("Issuer: %s\n", line);
-    //free(line);       /* free the malloc'ed string */
-    X509_free(cert);     /* free the malloc'ed certificate copy */
+  if ((my_ssl = SSL_new(my_ssl_ctx)) == NULL) {
+    ERR_print_errors_fp(stderr);
+    exit(-1);
   }
-  else
-    printf("Info: No client certificates configured.\n");
-}
-
-
-
-
-SOCKET OpenConnection(const char *hostname, int port)
-{
-  SOCKADDR_IN serveraddr;
-  SOCKET clientsocket;
 
   //创建套接字
-  if ((clientsocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) <= 0)
+  if ((my_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) <= 0)
   {
     printf("套接字socket创建失败!\n");
     return -1;
   }
 
-  serveraddr.sin_family = AF_INET;
-  serveraddr.sin_port = htons(9102);
-  serveraddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+  server.sin_family = AF_INET;
+  server.sin_port = htons(9102);
+  server.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
 
   //请求连接
   printf("尝试连接中...\n");
-  if (connect(clientsocket, (SOCKADDR *)&serveraddr, sizeof(serveraddr)) != 0)
+  if (connect(my_fd, (SOCKADDR *)&server, sizeof(server)) != 0)
   {
     printf("连接失败!\n");
     return -1;
   }
   printf("连接成功!\n");
 
-  return clientsocket;
-}
-
-
-int main()
-{
-  SOCKET clientsocket;
-
-  char recvbuf[1024];
-
-  WSADATA wsa;
-  WSAStartup(MAKEWORD(2, 0), &wsa);	//初始化WS2_32.DLL
-
-  SSL *ssl;
-  SSL_CTX *ctx;
-  SSL_library_init();
-  ctx = InitCTX();
-  clientsocket = OpenConnection(nullptr, 0);
-
-  ssl = SSL_new(ctx);      /* create new SSL connection state */
-  SSL_set_fd(ssl, clientsocket);    /* attach the socket descriptor */
-  if (SSL_connect(ssl) == -1)   /* perform the connection */
+  SSL_set_fd(my_ssl, my_fd);
+  if (SSL_connect(my_ssl) <= 0) {
     ERR_print_errors_fp(stderr);
-  else
-  {
-    char msg[] = "Hello server";
-  
-    printf("Connected with %s encryption\n", SSL_get_cipher(ssl));
-    ShowCerts(ssl);        /* get any certs */
-    SSL_write(ssl, msg, strlen(msg));   /* encrypt & send message */
-    int bytes = SSL_read(ssl, recvbuf, sizeof(recvbuf)); /* get reply & decrypt */
-    recvbuf[bytes] = 0;
-    printf("Received: \"%s\"\n", recvbuf);
-    SSL_free(ssl);        /* release connection state */
+    exit(-1);
   }
+  printf("[%s,%s]\n", SSL_get_version(my_ssl), SSL_get_cipher(my_ssl));
 
-    //关闭套接字
-  closesocket(clientsocket);
-  WSACleanup();    //释放WS2_32.DLL
+  char sendbuf[] = "hello server!";
+  char recvbuf[1024];
+  SSL_write(my_ssl, sendbuf, strlen(sendbuf));   /* encrypt & send message */
+  int bytes = SSL_read(my_ssl, recvbuf, sizeof(recvbuf)); /* get reply & decrypt */
+  recvbuf[bytes] = 0;
+  printf("Received: \"%s\"\n", recvbuf);
+
+
+  SSL_shutdown(my_ssl);
+  SSL_free(my_ssl);
+  SSL_CTX_free(my_ssl_ctx);
+  closesocket(my_fd);
+
   return 0;
 }
