@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tls_server", "tls_server\tls_server.vcxproj", "{662123D3-0BF4-4BC4-BEA6-3828BE99FEF2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tls_server_fd", "tls_server\tls_server.vcxproj", "{662123D3-0BF4-4BC4-BEA6-3828BE99FEF2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tls_client", "tls_client\tls_client.vcxproj", "{F5CB5407-9AAA-441D-8282-9DD12E529A8D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tls_client_fd", "tls_client\tls_client.vcxproj", "{F5CB5407-9AAA-441D-8282-9DD12E529A8D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tls_server_bio", "tls_server_bio\tls_server_bio.vcxproj", "{EE1496FF-9951-4AE6-8F01-6234674EBA0A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tls_client_bio", "tls_client_bio\tls_client_bio.vcxproj", "{952AC386-DCFC-4F8A-B86F-E128167486F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +35,22 @@ Global
 		{F5CB5407-9AAA-441D-8282-9DD12E529A8D}.Release|x64.Build.0 = Release|x64
 		{F5CB5407-9AAA-441D-8282-9DD12E529A8D}.Release|x86.ActiveCfg = Release|Win32
 		{F5CB5407-9AAA-441D-8282-9DD12E529A8D}.Release|x86.Build.0 = Release|Win32
+		{EE1496FF-9951-4AE6-8F01-6234674EBA0A}.Debug|x64.ActiveCfg = Debug|x64
+		{EE1496FF-9951-4AE6-8F01-6234674EBA0A}.Debug|x64.Build.0 = Debug|x64
+		{EE1496FF-9951-4AE6-8F01-6234674EBA0A}.Debug|x86.ActiveCfg = Debug|Win32
+		{EE1496FF-9951-4AE6-8F01-6234674EBA0A}.Debug|x86.Build.0 = Debug|Win32
+		{EE1496FF-9951-4AE6-8F01-6234674EBA0A}.Release|x64.ActiveCfg = Release|x64
+		{EE1496FF-9951-4AE6-8F01-6234674EBA0A}.Release|x64.Build.0 = Release|x64
+		{EE1496FF-9951-4AE6-8F01-6234674EBA0A}.Release|x86.ActiveCfg = Release|Win32
+		{EE1496FF-9951-4AE6-8F01-6234674EBA0A}.Release|x86.Build.0 = Release|Win32
+		{952AC386-DCFC-4F8A-B86F-E128167486F0}.Debug|x64.ActiveCfg = Debug|x64
+		{952AC386-DCFC-4F8A-B86F-E128167486F0}.Debug|x64.Build.0 = Debug|x64
+		{952AC386-DCFC-4F8A-B86F-E128167486F0}.Debug|x86.ActiveCfg = Debug|Win32
+		{952AC386-DCFC-4F8A-B86F-E128167486F0}.Debug|x86.Build.0 = Debug|Win32
+		{952AC386-DCFC-4F8A-B86F-E128167486F0}.Release|x64.ActiveCfg = Release|x64
+		{952AC386-DCFC-4F8A-B86F-E128167486F0}.Release|x64.Build.0 = Release|x64
+		{952AC386-DCFC-4F8A-B86F-E128167486F0}.Release|x86.ActiveCfg = Release|Win32
+		{952AC386-DCFC-4F8A-B86F-E128167486F0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

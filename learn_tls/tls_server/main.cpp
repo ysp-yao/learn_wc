@@ -104,7 +104,7 @@ int main() {
   printf("[%s,%s]\n", SSL_get_version(my_ssl), SSL_get_cipher(my_ssl));
 
   char buf[1024];
-  char sendbuf[] = "hello client!\n";
+  char sendbuf[] = "hello client!";
   int bytes = SSL_read(my_ssl, buf, sizeof(buf)); /* get request */
   if (bytes > 0)
   {
