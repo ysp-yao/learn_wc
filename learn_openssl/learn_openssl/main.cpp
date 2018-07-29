@@ -1,9 +1,14 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
+#include <openssl/ssl.h>
 
 #include <thread>
 
 #include <stdio.h>
+
+
+
+
 
 
 void test_bio_mem()
@@ -150,16 +155,69 @@ void test_bio_cipher()
   BIO_free(bdec);
 }
 
+void test_bio_ssl()
+{
+  BIO *sbio, *out;
+  int len;
+  char tmpbuf[1024];
+  SSL_CTX *ctx;
+  SSL *ssl;
+  SSLeay_add_ssl_algorithms();
+  OpenSSL_add_all_algorithms();
+  ctx = SSL_CTX_new(SSLv23_client_method());
+  sbio = BIO_new_ssl_connect(ctx);
+  BIO_get_ssl(sbio, &ssl);
+  if (!ssl)
+  {
+    fprintf(stderr, "Can not locate SSL pointer\n");
+    return;
+  }
+  SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+  BIO_set_conn_hostname(sbio, "mybank.icbc.com.cn:https");
+  out = BIO_new_fp(stdout, BIO_NOCLOSE);
+  BIO_printf(out, "¡¥Ω”÷–°≠.\n");
+  if (BIO_do_connect(sbio) <= 0)
+  {
+    fprintf(stderr, "Error connecting to server\n");
+    return;
+  }
+  if (BIO_do_handshake(sbio) <= 0)
+  {
+    fprintf(stderr, "Error establishing SSL connection\n");
+    return;
+  }
+  BIO_puts(sbio, "GET / HTTP/1.0\n\n");
+  for (;;)
+  {
+    len = BIO_read(sbio, tmpbuf, 1024);
+    if (len <= 0) break;
+    BIO_write(out, tmpbuf, len);
+  }
+  BIO_free_all(sbio);
+  BIO_free(out);
+}
+
+
 int main()
 {
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+  printf(" error ... OpenSSL pre-1.1.0\n");
+#else
+  printf("OpenSSL >= 1.1.0\n");
+#endif
+
   test_bio_mem();
   printf("\n");
   test_bio_file();
   printf("\n");
-  //test_bio_socket();
+  test_bio_socket();
   printf("\n");
-  //test_bio_md();
+  test_bio_md();
+  printf("\n");
   test_bio_cipher();
+  printf("\n");
+  test_bio_ssl();
 
   return 0;
 }
